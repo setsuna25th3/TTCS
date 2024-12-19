@@ -230,7 +230,7 @@ class SHA256Hash:
         hashed_message = SHA256Hash.encrypt_usehashlib(string)
         end_time = time.time()
         time2 = end_time - start_time
-        return time1, time2
+        return (time1, time2)
 
 class RSAEncryption:
     @staticmethod
