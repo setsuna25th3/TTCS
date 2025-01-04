@@ -1,6 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
-import math
+from tkinter import ttk, filedialog
 import random
 from sympy import mod_inverse, isprime
 import hashlib
@@ -11,28 +10,25 @@ class EncryptApp:
         self.root.title("Ứng dụng mã hóa")
 
         self.label = tk.Label(root_index, text = "Nhập dữ liệu hoặc chọn file: ")
-        self.label.pack(pady = 10)
+        self.label.grid(row = 0, column = 0, padx = 5, pady = 5)
 
-        self.entry = tk.Entry(root_index, width = 50)
-        self.entry.pack(pady = 10)
+        self.entry = tk.Entry(root_index, width = 25)
+        self.entry.grid(row = 0, column = 1, columnspan = 2, padx = 5, pady = 5)
 
         self.file_button = tk.Button(root_index, text = "Chọn file", command = self.choose_file)
-        self.file_button.pack(pady = 10)
+        self.file_button.grid(row = 0, column = 3, padx = 5, pady = 5)
 
         self.algorithm_label = tk.Label(root_index, text = "Chọn thuật toán mã hóa:")
-        self.algorithm_label.pack(pady = 10)
+        self.algorithm_label.grid(row = 1, column = 0, padx = 5, pady = 5)
 
         self.algorithm_var = tk.StringVar(value = "Default")
         self.rsa_radio = tk.Radiobutton(root_index, text = "RSA", variable = self.algorithm_var, value = "RSA")
         self.sha_radio = tk.Radiobutton(root_index, text = "SHA-256", variable = self.algorithm_var, value = "SHA")
-        self.rsa_radio.pack()
-        self.sha_radio.pack()
+        self.rsa_radio.grid(row = 1, column = 1, padx = 5, pady = 5)
+        self.sha_radio.grid(row = 1, column = 2, padx = 5, pady = 5)
 
         self.submit_button = tk.Button(root_index, text = "Mã hóa", command = self.submit_data)
-        self.submit_button.pack(pady = 10)
-
-        self.output_text = tk.Text(root_index, height = 10, width = 100)
-        self.output_text.pack(pady = 10)
+        self.submit_button.grid(row = 1, column = 3, padx = 5, pady = 5)
 
         self.file_path = None
 
@@ -52,16 +48,9 @@ class EncryptApp:
             sha256_app = SHA256App(sha256_root, data)
             sha256_root.mainloop()
         else:
-            public_key, private_key, prime_number = RSAEncryption.generate_keypair(8)
-            encrypted_message = RSAEncryption.encrypt(public_key, data)
-            str1 = f"Sinh cặp khóa ngẫu nhiên:\nKhóa công khai: {public_key}\nKhóa riêng tư: {private_key}\nCặp số nguyên tố lớn: {prime_number}\n"
-            str2 = f"Kết quả mã hóa: {encrypted_message}\n"
-            decrypted_message = RSAEncryption.decrypt(private_key, encrypted_message)
-            str3 = f"Kết quả giải mã: {decrypted_message}"
-            result = str1 + str2 + str3
-
-            self.output_text.delete(1.0, tk.END)
-            self.output_text.insert(tk.END, result)
+            rsa_root = tk.Tk()
+            rsa_app = RSAEncryptionApp(rsa_root, data)
+            rsa_root.mainloop()
 
 class BinaryConverter:
     @staticmethod
@@ -229,11 +218,11 @@ class SHA256Hash:
     def time_running(string):
         start_time = time.time()
         sha256_obj = SHA256Hash(string)
-        hashed_message = sha256_obj.encrypt()
+        sha256_obj.encrypt()
         end_time = time.time()
         time1 = end_time - start_time
         start_time = time.time()
-        hashed_message = SHA256Hash.encrypt_hashlib(string)
+        SHA256Hash.encrypt_hashlib(string)
         end_time = time.time()
         time2 = end_time - start_time
         return time1, time2
@@ -407,6 +396,24 @@ class RSAEncryption:
         key, n = pk
         plain = [chr(pow(char, key, n)) for char in ciphertext]
         return ''.join(plain)
+
+class RSAEncryptionApp:
+    def __init__(self, root_index, string):
+        self.root = root_index
+        self.data = string
+        self.root.title("Chi tiết mã hóa RSA")
+
+        button_frame = tk.Frame(self.root)
+        button_frame.pack(pady=10)
+
+        self.length_button = tk.Label(button_frame, text = "Nhập độ dài khóa")
+        self.length_button.grid(row = 0, column = 0, padx = 5)
+
+        self.length = tk.Entry(button_frame, width = 10)
+        self.length.grid(row = 0, column = 1, padx = 5)
+
+        self.output_text = tk.Text(root_index, height=10, width=100)
+        self.output_text.pack(pady=10)
 
 if __name__ == "__main__":
     root = tk.Tk()
