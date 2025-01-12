@@ -526,7 +526,7 @@ class RSAEncryptionApp:
         self.d = None
         self.encrypt_message = None
         self.decrypt_message = None
-        self.output_text = tk.Text(root_index, height = 10, width = 120)
+        self.output_text = tk.Text(root_index, height = 10, width = 130)
         self.output_text.pack(pady = 10)
 
     def generate_keypair(self):
@@ -610,7 +610,7 @@ class RSAEncryptionApp:
         if file_path:  # Nếu người dùng chọn file
             try:
                 with open(file_path, 'w', encoding='utf-8') as file:
-                    file.write(''.join(self.encrypt_message))
+                    file.write(f"{''.join(self.encrypt_message)}\n{self.e}\n{self.N}")
                 print(f"Dữ liệu đã được lưu vào {file_path}")
             except Exception as e:
                 print(f"Lỗi khi lưu file: {e}")
