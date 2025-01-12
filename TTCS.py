@@ -207,6 +207,8 @@ class SHA256Hash:
         # Dữ liệu chuẩn bị cho quá trình băm
         self.w = []
 
+        self.encrypt_message = None
+
     # Function chuyển dữ liệu ban đầu thành các chuỗi nhị phân
     def prepare_data(self):
         result = BinaryConverter.string_to_binary(self.data) + '10000000'
@@ -255,8 +257,7 @@ class SHA256Hash:
             self.detail_encrypt(i)
         for i in range (8):
             self.const[i] = BinaryConverter.add_binary_string(self.const[i], self.index[i])
-        encrypt_message = ''.join(HexConverter.binary_to_hex(x) for x in self.const)
-        return encrypt_message
+        self.encrypt_message = ''.join(HexConverter.binary_to_hex(x) for x in self.const)
 
     # Function băm dữ liệu bằng thư viện có sẵn
     @staticmethod
@@ -313,6 +314,8 @@ class SHA256App(SHA256Hash):
         self.encrypt_button = tk.Button(button_frame, text = "Kết quả mã hóa", command = self.encrypt_data)
         self.encrypt_button.grid(row = 0, column = 6, padx = 5)
 
+        self.save_button = tk.Button(button_frame, text = "Lưu kết quả mã hóa", command = self.save_data)
+        self.save_button.grid(row = 0, column = 7, padx = 5)
         # Vùng để hiển thị kết quả từng bước
         self.output_text = tk.Text(root_index, height = 10, width = 100)
         self.output_text.pack(pady = 10)
@@ -348,11 +351,11 @@ class SHA256App(SHA256Hash):
 
     def encrypt_data(self):
         sha256_obj = SHA256Hash(self.data)
-        hashed_message = sha256_obj.encrypt()
+        sha256_obj.encrypt()
         hashed_message_library = SHA256Hash.encrypt_hashlib(self.data)
         time1, time2 = SHA256Hash.time_running(self.data)
         str1 = f"Kết quả mã hóa: \n"
-        str2 = f"Không sử dụng thư viện: {hashed_message}\nThời gian thực hiện: {time1} giây\n"
+        str2 = f"Không sử dụng thư viện: {sha256_obj.encrypt_message}\nThời gian thực hiện: {time1} giây\n"
         str3 = f"Sử dụng thư viện: {hashed_message_library}\nThời gian thực hiện: {time2} giây"
         result = str1 + str2 + str3
         self.output_text.delete(1.0, tk.END)
@@ -388,6 +391,24 @@ class SHA256App(SHA256Hash):
             result += f"const[{i}]: {sha256_variable.const[i]} -> Chuyển sang hệ 16: {HexConverter.binary_to_hex(sha256_variable.const[i])}\n"
         self.output_text.delete(1.0, tk.END)
         self.output_text.insert(tk.END, result)
+
+    def save_data(self):
+        file_path = filedialog.asksaveasfilename(
+            title = "Lưu file",
+            defaultextension = ".txt",
+            filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
+        )
+        sha256_obj = SHA256Hash(self.data)
+        sha256_obj.encrypt()
+        if file_path:  # Nếu người dùng chọn file
+            try:
+                with open(file_path, 'w', encoding='utf-8') as file:
+                    file.write(sha256_obj.encrypt_message)
+                print(f"Dữ liệu đã được lưu vào {file_path}")
+            except Exception as e:
+                print(f"Lỗi khi lưu file: {e}")
+        else:
+            print("Hủy lưu file.")
 
 # Class dùng để xử lý cũng như hiển thị các bước của thuật toán Euclid và Euclid mở rộng
 class NumericTool:
@@ -491,8 +512,11 @@ class RSAEncryptionApp:
         self.encrypt_button = tk.Button(button_frame, text = "Mã hóa", command = self.encrypt)
         self.encrypt_button.grid(row = 0, column = 6, padx = 5)
 
+        self.save_button = tk.Button(button_frame, text = "Lưu kết quả mã hóa", command = self.save_data)
+        self.save_button.grid(row = 0, column = 7, padx = 5)
+
         self.decrypt_button = tk.Button(button_frame, text = "Giải mã", command = self.decrypt)
-        self.decrypt_button.grid(row = 0, column = 7, padx = 5)
+        self.decrypt_button.grid(row = 0, column = 8, padx = 5)
         self.p = None
         self.q = None
         self.N = None
@@ -576,6 +600,22 @@ class RSAEncryptionApp:
         result = f"Kết quả giải mã: {''.join(self.decrypt_message)}\nThời gian giải mã: {time_running} giây"
         self.output_text.delete(1.0, tk.END)
         self.output_text.insert(tk.END, result)
+
+    def save_data(self):
+        file_path = filedialog.asksaveasfilename(
+            title = "Lưu file",
+            defaultextension = ".txt",
+            filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
+        )
+        if file_path:  # Nếu người dùng chọn file
+            try:
+                with open(file_path, 'w', encoding='utf-8') as file:
+                    file.write(''.join(self.encrypt_message))
+                print(f"Dữ liệu đã được lưu vào {file_path}")
+            except Exception as e:
+                print(f"Lỗi khi lưu file: {e}")
+        else:
+            print("Hủy lưu file.")
 
 if __name__ == "__main__":
     root = tk.Tk()
