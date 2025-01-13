@@ -86,7 +86,7 @@ class EncryptApp:
         else:
             messagebox.showerror("Lỗi thuật toán", "Hãy chọn thuật toán mã hóa dữ liệu")
 
-class BinaryConverter:
+class Converter:
     # Function chuyển từ chuỗi kí tự sang chuỗi nhị phân
     @staticmethod
     def string_to_binary(string):
@@ -157,9 +157,8 @@ class BinaryConverter:
     def add_binary_string(*strings):
         total = sum(int(s, 2) for s in strings)
         result = total % (2**32)
-        return BinaryConverter.int_to_binary(result)
+        return Converter.int_to_binary(result)
 
-class HexConverter:
     # Function chuển từ nhị phân sang hệ 16
     @staticmethod
     def binary_to_hex(binary_string):
@@ -211,7 +210,7 @@ class SHA256Hash:
 
     # Function chuyển dữ liệu ban đầu thành các chuỗi nhị phân
     def prepare_data(self):
-        result = BinaryConverter.string_to_binary(self.data) + '10000000'
+        result = Converter.string_to_binary(self.data) + '10000000'
         length = len(result)
         result = result.ljust((length + 64 + 511) // 512 * 512 - 64, '0')
         result += bin(len(self.data.encode('utf-8')) * 8)[2:].zfill(64)
@@ -220,26 +219,26 @@ class SHA256Hash:
     # Function xử lý dữ liệu
     def data_processing(self):
         for i in range(16, 64):
-            s0 = BinaryConverter.xor_string(BinaryConverter.right_rotate(self.w[i - 15], 7), BinaryConverter.right_rotate(self.w[i - 15], 18), BinaryConverter.right_shift(self.w[i - 15], 3))
-            s1 = BinaryConverter.xor_string(BinaryConverter.right_rotate(self.w[i - 2], 17), BinaryConverter.right_rotate(self.w[i - 2], 19), BinaryConverter.right_shift(self.w[i - 2], 10))
-            self.w[i] = BinaryConverter.add_binary_string(self.w[i - 16], s0, self.w[i - 7], s1)
+            s0 = Converter.xor_string(Converter.right_rotate(self.w[i - 15], 7), Converter.right_rotate(self.w[i - 15], 18), Converter.right_shift(self.w[i - 15], 3))
+            s1 = Converter.xor_string(Converter.right_rotate(self.w[i - 2], 17), Converter.right_rotate(self.w[i - 2], 19), Converter.right_shift(self.w[i - 2], 10))
+            self.w[i] = Converter.add_binary_string(self.w[i - 16], s0, self.w[i - 7], s1)
 
     # Function chi tiết từng vòng băm
     def detail_encrypt(self, number):
-        s1 = BinaryConverter.xor_string(BinaryConverter.right_rotate(self.index[4], 6), BinaryConverter.right_rotate(self.index[4], 11), BinaryConverter.right_rotate(self.index[4], 25))
-        choice = BinaryConverter.xor_string(BinaryConverter.and_string(self.index[4], self.index[5]), BinaryConverter.and_string(BinaryConverter.not_string(self.index[4]), self.index[6]))
-        temp1 = BinaryConverter.add_binary_string(self.index[7], s1, choice, self.k_values[number], self.w[number])
-        s0 = BinaryConverter.xor_string(BinaryConverter.right_rotate(self.index[0], 2), BinaryConverter.right_rotate(self.index[0], 13), BinaryConverter.right_rotate(self.index[0], 22))
-        majority = BinaryConverter.xor_string(BinaryConverter.and_string(self.index[0], self.index[1]), BinaryConverter.and_string(self.index[0], self.index[2]), BinaryConverter.and_string(self.index[1], self.index[2]))
-        temp2 = BinaryConverter.add_binary_string(s0, majority)
+        s1 = Converter.xor_string(Converter.right_rotate(self.index[4], 6), Converter.right_rotate(self.index[4], 11), Converter.right_rotate(self.index[4], 25))
+        choice = Converter.xor_string(Converter.and_string(self.index[4], self.index[5]), Converter.and_string(Converter.not_string(self.index[4]), self.index[6]))
+        temp1 = Converter.add_binary_string(self.index[7], s1, choice, self.k_values[number], self.w[number])
+        s0 = Converter.xor_string(Converter.right_rotate(self.index[0], 2), Converter.right_rotate(self.index[0], 13), Converter.right_rotate(self.index[0], 22))
+        majority = Converter.xor_string(Converter.and_string(self.index[0], self.index[1]), Converter.and_string(self.index[0], self.index[2]), Converter.and_string(self.index[1], self.index[2]))
+        temp2 = Converter.add_binary_string(s0, majority)
         self.index[7] = self.index[6]
         self.index[6] = self.index[5]
         self.index[5] = self.index[4]
-        self.index[4] = BinaryConverter.add_binary_string(self.index[3], temp1)
+        self.index[4] = Converter.add_binary_string(self.index[3], temp1)
         self.index[3] = self.index[2]
         self.index[2] = self.index[1]
         self.index[1] = self.index[0]
-        self.index[0] = BinaryConverter.add_binary_string(temp1, temp2)
+        self.index[0] = Converter.add_binary_string(temp1, temp2)
         result = ""
         for i in range(8):
             result += self.index[i]
@@ -256,8 +255,8 @@ class SHA256Hash:
         for i in range(64):
             self.detail_encrypt(i)
         for i in range (8):
-            self.const[i] = BinaryConverter.add_binary_string(self.const[i], self.index[i])
-        self.encrypt_message = ''.join(HexConverter.binary_to_hex(x) for x in self.const)
+            self.const[i] = Converter.add_binary_string(self.const[i], self.index[i])
+        self.encrypt_message = ''.join(Converter.binary_to_hex(x) for x in self.const)
 
     # Function băm dữ liệu bằng thư viện có sẵn
     @staticmethod
@@ -321,7 +320,7 @@ class SHA256App(SHA256Hash):
         self.output_text.pack(pady = 10)
 
     def first_data(self):
-        result = BinaryConverter.string_to_binary(self.data) + '10000000'
+        result = Converter.string_to_binary(self.data) + '10000000'
         length = len(result)
         result = result.ljust((length + 64 + 511) // 512 * 512 - 64, '0')
         result += bin(len(self.data.encode('utf-8')) * 8)[2:].zfill(64)
@@ -385,10 +384,10 @@ class SHA256App(SHA256Hash):
         for i in range(64):
             sha256_variable.detail_encrypt(i)
         for i in range(8):
-            sha256_variable.const[i] = BinaryConverter.add_binary_string(sha256_variable.const[i], sha256_variable.index[i])
+            sha256_variable.const[i] = Converter.add_binary_string(sha256_variable.const[i], sha256_variable.index[i])
         result = ""
         for i in range(8):
-            result += f"const[{i}]: {sha256_variable.const[i]} -> Chuyển sang hệ 16: {HexConverter.binary_to_hex(sha256_variable.const[i])}\n"
+            result += f"const[{i}]: {sha256_variable.const[i]} -> Chuyển sang hệ 16: {Converter.binary_to_hex(sha256_variable.const[i])}\n"
         self.output_text.delete(1.0, tk.END)
         self.output_text.insert(tk.END, result)
 
@@ -509,14 +508,17 @@ class RSAEncryptionApp:
         self.key_button = tk.Button(button_frame, text = "Hiển thị cặp khóa", command = self.display_key)
         self.key_button.grid(row = 0, column = 5, padx = 5)
 
+        self.key_save = tk.Button(button_frame, text = "Lưu khóa", command = self.save_key)
+        self.key_save.grid(row = 0, column = 6, padx = 5)
+
         self.encrypt_button = tk.Button(button_frame, text = "Mã hóa", command = self.encrypt)
-        self.encrypt_button.grid(row = 0, column = 6, padx = 5)
+        self.encrypt_button.grid(row = 0, column = 7, padx = 5)
 
         self.save_button = tk.Button(button_frame, text = "Lưu kết quả mã hóa", command = self.save_data)
-        self.save_button.grid(row = 0, column = 7, padx = 5)
+        self.save_button.grid(row = 0, column = 8, padx = 5)
 
         self.decrypt_button = tk.Button(button_frame, text = "Giải mã", command = self.decrypt)
-        self.decrypt_button.grid(row = 0, column = 8, padx = 5)
+        self.decrypt_button.grid(row = 0, column = 9, padx = 5)
         self.p = None
         self.q = None
         self.N = None
@@ -526,7 +528,7 @@ class RSAEncryptionApp:
         self.d = None
         self.encrypt_message = None
         self.decrypt_message = None
-        self.output_text = tk.Text(root_index, height = 10, width = 130)
+        self.output_text = tk.Text(root_index, height = 10, width = 150)
         self.output_text.pack(pady = 10)
 
     def generate_keypair(self):
@@ -594,6 +596,15 @@ class RSAEncryptionApp:
 
     def decrypt(self):
         start_time = time.time()
+        file_data_path = filedialog.askopenfilename()
+        if file_data_path:
+            with open(file_data_path, 'r', encoding = 'utf-8') as file:
+                self.encrypt_message = [line.strip() for line in file]
+        file_key_path = filedialog.askopenfilename()
+        if file_key_path:
+            with open(file_key_path, 'r', encoding = 'utf-8') as file:
+                self.e = int(file.readline().strip())
+                self.N = int(file.readline().strip())
         self.decrypt_message = [chr(pow(int(char, 16), self.e, self.N)) for char in self.encrypt_message]
         end_time = time.time()
         time_running = end_time - start_time
@@ -605,13 +616,30 @@ class RSAEncryptionApp:
         file_path = filedialog.asksaveasfilename(
             title = "Lưu file",
             defaultextension = ".txt",
-            filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
+            filetypes = [("Text Files", "*.txt"), ("All Files", "*.*")]
         )
         if file_path:  # Nếu người dùng chọn file
             try:
                 with open(file_path, 'w', encoding='utf-8') as file:
-                    file.write(f"{''.join(self.encrypt_message)}\n{self.e}\n{self.N}")
+                    for item in self.encrypt_message:
+                        file.write(f"{item}\n")
                 print(f"Dữ liệu đã được lưu vào {file_path}")
+            except Exception as e:
+                print(f"Lỗi khi lưu file: {e}")
+        else:
+            print("Hủy lưu file.")
+
+    def save_key(self):
+        file_path = filedialog.asksaveasfilename(
+            title = "Lưu file",
+            defaultextension = ".txt",
+            filetypes = [("Text Files", "*.txt"), ("All Files", "*.*")]
+        )
+        if file_path:  # Nếu người dùng chọn file
+            try:
+                with open(file_path, 'w', encoding='utf-8') as file:
+                    file.write(f"{self.e}\n{self.N}")
+                print(f"Khóa đã được lưu vào {file_path}")
             except Exception as e:
                 print(f"Lỗi khi lưu file: {e}")
         else:
